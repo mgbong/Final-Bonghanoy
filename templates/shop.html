@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Shop | Pawradise{% endblock %}
+
+{% block content %}
+<section class="shop-section">
+    <h1 class="heading">Exclusive Products</h1>
+
+    <!-- Category Filter -->
+    <div class="category-filter">
+        <a href="{{ url_for('shop') }}" class="filter-btn {% if not request.args.get('category') %}active{% endif %}">
+            All Products
+        </a>
+        <a href="{{ url_for('shop', category='collars') }}" class="filter-btn {% if request.args.get('category') == 'collars' %}active{% endif %}">
+            Collars & Leashes
+        </a>
+        <a href="{{ url_for('shop', category='toys') }}" class="filter-btn {% if request.args.get('category') == 'toys' %}active{% endif %}">
+            Toys
+        </a>
+        <a href="{{ url_for('shop', category='grooming') }}" class="filter-btn {% if request.args.get('category') == 'grooming' %}active{% endif %}">
+            Grooming & Bath
+        </a>
+        <a href="{{ url_for('shop', category='beds') }}" class="filter-btn {% if request.args.get('category') == 'beds' %}active{% endif %}">
+            Beds
+        </a>
+        <a href="{{ url_for('shop', category='bowls') }}" class="filter-btn {% if request.args.get('category') == 'bowls' %}active{% endif %}">
+            Bowls & Feeders
+        </a>
+        <a href="{{ url_for('shop', category='litter') }}" class="filter-btn {% if request.args.get('category') == 'litter' %}active{% endif %}">
+            Litter & Boxes
+        </a>
+        <a href="{{ url_for('shop', category='clothes') }}" class="filter-btn {% if request.args.get('category') == 'clothes' %}active{% endif %}">
+            Clothes
+        </a>
+    </div>
+
+    {% if session.get('role') in ['seller', 'owner'] %}
+    <div class="upload-container">
+        <h2>Add New Product</h2>
+        <form action="{{ url_for('add_product') }}" method="POST" enctype="multipart/form-data">
+            <input type="text" name="name" placeholder="Product Name" required>
+            <textarea name="description" placeholder="Product Description" rows="3" required></textarea>
+            <input type="number" name="price" placeholder="Price" step="0.01" required>
+            <input type="number" name="stock" placeholder="Stock Quantity" min="0" required>
+            <select name="category" required>
+                <option value="">Select Category</option>
+                <option value="collars">Collars & Leashes</option>
+                <option value="toys">Toys</option>
+                <option value="grooming">Grooming & Bath Supplies</option>
+                <option value="beds">Beds</option>
+                <option value="bowls">Bowls & Feeders</option>
+                <option value="litter">Litter & Litter Box</option>
+                <option value="clothes">Clothes</option>
+            </select>
+            <input type="file" name="image" accept="image/*" required>
+            <button type="submit" class="upload-btn">Add Product</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if products %}
+    <div class="product-container">
+        {% for product in products %}
+        <div class="product-card">
+            {% if product.image %}
+            <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
+            {% else %}
+            <img src="{{ url_for('static', filename='placeholder.jpg') }}" alt="{{ product.name }}">
+            {% endif %}
+
+            {% if product.stock <= 0 %}
+            <div class="out-of-stock-badge">Out of Stock</div>
+            {% elif product.stock <= 5 %}
+            <div class="low-stock-badge">Only {{ product.stock }} left!</div>
+            {% endif %}
+
+            <h3>{{ product.name }}</h3>
+            <p class="product-desc">{{ product.description }}</p>
+            <p class="product-price">₱{{ "%.2f"|format(product.price) }}</p>
+
+            {% if product.stock > 0 and session.get('role') != 'admin' %}
+            <div class="product-actions">
+                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" class="add-to-cart-form">
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="quantity-input" required>
+                    <button type="submit" class="add-cart-btn">Add to Cart</button>
+                </form>
+                <a href="{{ url_for('buy_now', product_id=product.id) }}" class="buy-now-btn">Buy Now</a>
+            </div>
+            {% elif product.stock <= 0 %}
+            <button class="add-cart-btn disabled" disabled>Out of Stock</button>
+            {% elif session.get('role') == 'admin' %}
+            <p class="disabled-text">Admin View Only</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="no-products">No products available yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

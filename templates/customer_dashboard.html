@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Customer Dashboard | Pawradise{% endblock %}
+{% block content %}
+<section class="admin">
+  <h2>Your Customer Dashboard</h2>
+  <p>Welcome back, {{ session['username'] }}! Track your orders below.</p>
+
+  <h3>Your Orders</h3>
+  {% if orders %}
+  <table class="product-table">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Unit Price</th>
+        <th>Total Price</th>
+        <th>Date Purchased</th>
+        <th>Est. Delivery</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td>{{ o.id }}</td>
+        <td>{{ o.product_name }}</td>
+        <td>{{ o.quantity }}</td>
+        <td>₱{{ "%.2f"|format(o.unit_price) }}</td>
+        <td>₱{{ "%.2f"|format(o.total_price) }}</td>
+        <td>{{ o.date_of_purchase.strftime("%B %d, %Y") }}</td>
+        <td>{{ o.estimated_delivery.strftime("%B %d, %Y") }}</td>
+        <td>
+          <span class="status-badge status-{{ o.status.lower() }}">
+            {{ o.status }}
+          </span>
+        </td>
+        <td>
+          {% if o.status in ['Pending', 'Confirmed'] %}
+          <a href="{{ url_for('customer_cancel_order', id=o.id) }}" class="delete-btn" onclick="return confirm('Cancel this order?')">Cancel Order</a>
+          {% else %}
+          <span class="disabled-text">Cannot cancel</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-orders">
+    <div class="empty-icon">📦</div>
+    <h3>No orders yet</h3>
+    <p>You haven't placed any orders yet.</p>
+    <a href="{{ url_for('shop') }}" class="shop-now-btn">Start Shopping</a>
+  </div>
+  {% endif %}
+
+  <div class="dashboard-actions">
+    <h3>Quick Actions</h3>
+    <div class="action-buttons">
+      <a href="{{ url_for('shop') }}" class="action-btn"> Browse Products</a>
+      <a href="{{ url_for('cart') }}" class="action-btn"> View Cart</a>
+      <a href="{{ url_for('track_order') }}" class="action-btn"> Track Order</a>
+      <a href="{{ url_for('gallery') }}" class="action-btn">📸 Share Pet Photos</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

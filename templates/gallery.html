@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Gallery - Pawradise{% endblock %}
+
+{% block content %}
+<section class="gallery-section">
+    <h2>PAWFECT MOMENTS!</h2>
+    <div class="gallery-grid">
+        {% if photos %}
+            {% for photo in photos %}
+            <div class="gallery-item">
+                <img src="{{ url_for('static', filename='uploads/' ~ photo.filename) }}" alt="{{ photo.alt_text }}">
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-photos">No photos uploaded yet.</p>
+        {% endif %}
+    </div>
+</section>
+
+{% if session.get('role') in ['admin', 'seller', 'customer'] %}
+<div class="upload-container">
+    <h2>Share Your Pawfect Moments!</h2>
+    <p>Upload your pet photos to our gallery</p>
+    <form action="{{ url_for('upload_photo') }}" method="POST" enctype="multipart/form-data">
+        <input type="file" id="photo" class="file-input" name="photo" accept="image/*" required>
+        <button type="submit" class="upload-btn">Upload</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Order Form | Pawradise{% endblock %}
+{% block content %}
+<section class="order-form-section">
+  <h2>Complete Your Order</h2>
+
+  <div class="order-summary-box">
+    <h3>Order Summary</h3>
+    {% set total = namespace(value=0) %}
+    {% for item, product in cart_items %}
+      {% set qty = item.quantity if item else 1 %}
+      <div class="summary-item">
+        <div class="summary-product">
+          <strong>{{ product.name }}</strong>
+          <span class="summary-qty">x{{ qty }}</span>
+        </div>
+        <span class="summary-price">₱{{ "%.2f"|format(product.price * qty) }}</span>
+      </div>
+      {% set total.value = total.value + (product.price * qty) %}
+    {% endfor %}
+    <div class="summary-total">
+      <strong>Total:</strong>
+      <strong class="total-amount">₱{{ "%.2f"|format(total.value) }}</strong>
+    </div>
+  </div>
+
+  <form action="{{ url_for('place_order') }}" method="POST" class="order-form">
+    {% if buy_now %}
+    <input type="hidden" name="buy_now" value="true">
+    {% endif %}
+
+    <div class="form-group">
+      <label for="customer_name">Full Name *</label>
+      <input type="text" id="customer_name" name="customer_name" placeholder="Enter your full name" required>
+    </div>
+
+    <div class="form-group">
+      <label for="address">Delivery Address *</label>
+      <textarea id="address" name="address" rows="3" placeholder="Enter your complete delivery address" required></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="contact_number">Contact Number *</label>
+      <input type="tel" id="contact_number" name="contact_number" placeholder="Enter your contact number" required>
+    </div>
+
+    <div class="form-group">
+      <label for="payment_method">Payment Method *</label>
+      <select id="payment_method" name="payment_method" required>
+        <option value="">Select Payment Method</option>
+        <option value="Cash on Delivery">Cash on Delivery</option>
+        <option value="GCash">GCash</option>
+        <option value="PayMaya">PayMaya</option>
+        <option value="Bank Transfer">Bank Transfer</option>
+        <option value="Credit Card">Credit Card</option>
+      </select>
+    </div>
+
+    <div class="delivery-info">
+      <p>📦 <strong>Estimated Delivery:</strong> 7 days from order date</p>
+      <p> <strong>Order Date:</strong> {{ now().strftime("%B %d, %Y") }}</p>
+    </div>
+
+    <div class="form-actions">
+      <a href="{{ url_for('cart') if not buy_now else url_for('shop') }}" class="cancel-btn">← Cancel</a>
+      <button type="submit" class="submit-order-btn">Place Order </button>
+    </div>
+  </form>
+</section>
+{% endblock %}

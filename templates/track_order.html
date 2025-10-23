@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Track Order | Pawradise{% endblock %}
+{% block content %}
+<section class="track-order-section">
+  <h2>Track Your Order</h2>
+
+  <form method="POST" class="track-form">
+    <div class="search-box">
+      <input type="text" name="order_id" placeholder="Enter your order ID" required>
+      <button type="submit">Track Order</button>
+    </div>
+  </form>
+
+  {% if order %}
+  <div class="order-tracking-details">
+    <div class="tracking-header">
+      <h3>Order #{{ order.id }}</h3>
+      <span class="status-badge status-{{ order.status.lower() }}">{{ order.status }}</span>
+    </div>
+
+    <div class="tracking-info-grid">
+      <div class="info-card">
+        <h4> Product Details</h4>
+        <p><strong>Product:</strong> {{ order.product_name }}</p>
+        <p><strong>Quantity:</strong> {{ order.quantity }}</p>
+        <p><strong>Total Price:</strong> ₱{{ "%.2f"|format(order.total_price) }}</p>
+      </div>
+
+      <div class="info-card">
+        <h4> Customer Information</h4>
+        <p><strong>Name:</strong> {{ order.customer_name }}</p>
+        <p><strong>Contact:</strong> {{ order.contact_number }}</p>
+        <p><strong>Address:</strong> {{ order.address }}</p>
+      </div>
+
+      <div class="info-card">
+        <h4> Payment Details</h4>
+        <p><strong>Method:</strong> {{ order.payment_method }}</p>
+        <p><strong>Order Date:</strong> {{ order.date_of_purchase.strftime("%B %d, %Y at %I:%M %p") }}</p>
+        <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery.strftime("%B %d, %Y") }}</p>
+      </div>
+    </div>
+
+    <div class="tracking-timeline">
+      <h4> Order Status Timeline</h4>
+      <div class="timeline">
+        <div class="timeline-step {% if order.status in ['Pending', 'Confirmed', 'Shipped', 'Delivered'] %}completed{% endif %}">
+          <div class="timeline-icon"></div>
+          <div class="timeline-content">
+            <strong>Order Placed</strong>
+            <p>{{ order.date_of_purchase.strftime("%B %d, %Y") }}</p>
+          </div>
+        </div>
+
+        <div class="timeline-step {% if order.status in ['Confirmed', 'Shipped', 'Delivered'] %}completed{% endif %}">
+          <div class="timeline-icon"></div>
+          <div class="timeline-content">
+            <strong>Order Confirmed</strong>
+            {% if order.status in ['Confirmed', 'Shipped', 'Delivered'] %}
+            <p>Confirmed</p>
+            {% else %}
+            <p>Pending confirmation</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="timeline-step {% if order.status in ['Shipped', 'Delivered'] %}completed{% endif %}">
+          <div class="timeline-icon"></div>
+          <div class="timeline-content">
+            <strong>Shipped</strong>
+            {% if order.status in ['Shipped', 'Delivered'] %}
+            <p>On the way</p>
+            {% else %}
+            <p>Awaiting shipment</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="timeline-step {% if order.status == 'Delivered' %}completed{% endif %}">
+          <div class="timeline-icon"></div>
+          <div class="timeline-content">
+            <strong>Delivered</strong>
+            {% if order.status == 'Delivered' %}
+            <p>Order delivered successfully!</p>
+            {% else %}
+            <p>Expected: {{ order.estimated_delivery.strftime("%B %d, %Y") }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if order.status == 'Cancelled' %}
+        <div class="timeline-step completed cancelled">
+          <div class="timeline-icon"></div>
+          <div class="timeline-content">
+            <strong>Order Cancelled</strong>
+            <p>This order has been cancelled</p>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if order.status not in ['Delivered', 'Cancelled'] and order.user_id == session.get('user_id') and session.get('role') == 'customer' %}
+    <div class="order-actions">
+      <a href="{{ url_for('customer_cancel_order', id=order.id) }}" class="cancel-order-btn" onclick="return confirm('Are you sure you want to cancel this order?')">
+        Cancel Order
+      </a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

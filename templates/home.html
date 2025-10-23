@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Home | Pawradise{% endblock %}
+{% block content %}
+<section class="home">
+  <div class="content">
+    <h3>Welcome to Pawradise!</h3>
+    <p>Your one-stop for pet essentials.</p>
+    <a href="{{ url_for('shop') }}" class="home-cta">Shop Now</a>
+  </div>
+</section>
+
+<section class="best-sellers">
+  <h2 class="heading">Best Selling Products</h2>
+
+  {% if best_sellers %}
+  <div class="product-container">
+    {% for product in best_sellers %}
+    <div class="product-card">
+      {% if product.image %}
+      <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
+      {% else %}
+      <img src="{{ url_for('static', filename='placeholder.jpg') }}" alt="{{ product.name }}">
+      {% endif %}
+      <div class="best-seller-badge">⭐ Best Seller</div>
+      <h3>{{ product.name }}</h3>
+      <p class="product-desc">{{ product.description }}</p>
+      <div class="product-footer">
+        <p class="product-price">₱{{ "%.2f"|format(product.price) }}</p>
+        <p class="product-sales">{{ product.sales_count }} sold</p>
+      </div>
+      <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="add-cart-btn">Add to Cart</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="no-products">No products available yet.</p>
+  {% endif %}
+</section>
+
+<section class="about-preview">
+  <div class="about-content">
+    <h2>About Pawradise</h2>
+    <p>At Pawradise, we're passionate about providing the best products for your beloved pets. From hygiene essentials to fun accessories, we've got everything your furry friends need to live their best lives!</p>
+    <a href="{{ url_for('about') }}" class="learn-more-btn">Learn More About Us</a>
+  </div>
+</section>
+
+<section class="cta-section">
+  <h2>Have Questions?</h2>
+  <p>We'd love to hear from you! Get in touch with our friendly team.</p>
+  <a href="{{ url_for('contact') }}" class="contact-cta-btn">Contact Us</a>
+</section>
+{% endblock %}

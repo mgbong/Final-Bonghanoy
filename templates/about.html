@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}About | Pawradise{% endblock %}
+{% block content %}
+<section class="about" id="about">
+  <h1 class="heading">About Us</h1>
+  <div class="box-container">
+    <div class="box">
+      <div class="image">
+        <img src="{{ url_for('static', filename='bg7.jpg') }}" alt="Our Story">
+      </div>
+      <h3>Our Story</h3>
+      <p>Founded by a passionate pet lover, Pawradise was born out of a desire to create a one-stop shop for all pet accessories.</p>
+    </div>
+
+    <div class="box">
+      <div class="image">
+        <img src="{{ url_for('static', filename='bg2.jpg') }}" alt="Our Mission">
+      </div>
+      <h3>Mission</h3>
+      <p>At Pawradise, our mission is to enrich the lives of pets and their families by offering innovative, durable, and comfortable pet accessories.</p>
+    </div>
+
+    <div class="box">
+      <div class="image">
+        <img src="{{ url_for('static', filename='bg6.jpg') }}" alt="Our Vision">
+      </div>
+      <h3>Vision</h3>
+      <p>We envision a world where every pet is happy, healthy, and loved. Our goal is to become a global leader in pet accessories.</p>
+    </div>
+
+    <div class="box">
+      <div class="image">
+        <img src="{{ url_for('static', filename='bg4.jpg') }}" alt="Why Choose Us">
+      </div>
+      <h3>Why Choose Us?</h3>
+      <p>Pawradise isn't just about selling pet products; it's about enhancing the pet experience. We offer high-quality, eco-friendly, and stylish products with excellent service.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
