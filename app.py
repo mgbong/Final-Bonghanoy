@@ -26,11 +26,21 @@ ADMIN_USERNAME = "admin"
 ADMIN_EMAIL = "admin@pawradise.com"
 ADMIN_PASSWORD = "admin123"
 
-# ADDED: Make timedelta available in all templates
+STAFF_USERNAME = "staff"
+STAFF_EMAIL = "staff@pawradise.com"
+STAFF_PASSWORD = "staff123"
+
+
 @app.context_processor
 def utility_processor():
     return dict(timedelta=timedelta, now=datetime.utcnow)
 
+@app.template_filter('get_product')
+def get_product_filter(product_id):
+    """Template filter to get product by ID"""
+    if product_id:
+        return Product.query.get(product_id)
+    return None
 
 def login_required(f):
     @wraps(f)
@@ -115,6 +125,7 @@ class Gallery(db.Model):
     filename = db.Column(db.String(255), nullable=False)
     alt_text = db.Column(db.String(255))
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
 
 class ContactMessage(db.Model):
@@ -145,6 +156,145 @@ def create_admin_user():
         print(f"✓ Admin user created: {ADMIN_USERNAME}")
     else:
         print(f"✓ Admin user already exists: {ADMIN_USERNAME}")
+
+
+def create_staff_accounts():
+    """Create default staff account if it doesn't exist"""
+    staff = User.query.filter_by(username=STAFF_USERNAME).first()
+    if not staff:
+        hashed_pw = generate_password_hash(STAFF_PASSWORD)
+        staff = User(
+            username=STAFF_USERNAME,
+            email=STAFF_EMAIL,
+            password=hashed_pw,
+            role="seller"
+        )
+        db.session.add(staff)
+        db.session.commit()
+        print(f"✓ Staff user created: {STAFF_USERNAME}")
+    else:
+        print(f"✓ Staff user already exists: {STAFF_USERNAME}")
+
+
+def populate_static_products():
+    """Populate static products into database if they don't exist"""
+    static_products = [
+        # Collars & Leashes
+        {"name": "Dog Collar", "price": 55.00, "description": "Comfortable and durable collar for dogs",
+         "image": "image3.jpg", "stock": 50, "category": "collars"},
+        {"name": "Golden Heart Collar", "price": 35.00, "description": "Elegant collar with heart charm",
+         "image": "image4.jpg", "stock": 50, "category": "collars"},
+        {"name": "Butterfly Leash", "price": 135.00, "description": "Beautiful butterfly design leash",
+         "image": "butterfly.jpg", "stock": 50, "category": "collars"},
+        {"name": "Tulip Crochet Collar", "price": 150.00, "description": "Handmade crochet collar with tulip pattern",
+         "image": "tulip.jpg", "stock": 50, "category": "collars"},
+        {"name": "Pet Collar Laced", "price": 150.00, "description": "Stylish laced design collar",
+         "image": "laced.jpg", "stock": 50, "category": "collars"},
+        {"name": "Pearl Heart Cat Collar", "price": 270.00, "description": "Elegant pearl collar with heart pendant",
+         "image": "pearl.jpg", "stock": 50, "category": "collars"},
+        {"name": "Bandana Collar", "price": 199.00, "description": "Fashionable bandana-style collar",
+         "image": "bandana.jpg", "stock": 50, "category": "collars"},
+        {"name": "Dog Harness and Leash Set", "price": 399.00, "description": "Complete harness and leash set",
+         "image": "set.jpg", "stock": 50, "category": "collars"},
+
+        # Toys
+        {"name": "Donut Dog Toy", "price": 180.00, "description": "Cute donut-shaped squeaky toy",
+         "image": "donut.jpg", "stock": 50, "category": "toys"},
+        {"name": "Dinosaur Squishy Toy", "price": 299.00, "description": "Soft and squishy dinosaur toy",
+         "image": "toy.jpg", "stock": 50, "category": "toys"},
+        {"name": "Bone Dog Toy", "price": 150.00, "description": "Durable chew bone toy",
+         "image": "chewbone.jpg", "stock": 50, "category": "toys"},
+        {"name": "Fish Toy", "price": 160.00, "description": "Catnip-filled fish toy",
+         "image": "fish.jpg", "stock": 50, "category": "toys"},
+        {"name": "Rope Ball", "price": 99.00, "description": "Interactive rope ball toy",
+         "image": "toy1.jpg", "stock": 50, "category": "toys"},
+        {"name": "Catnip Pillow Toy", "price": 160.00, "description": "Soft pillow filled with catnip",
+         "image": "toy2.jpg", "stock": 50, "category": "toys"},
+        {"name": "Dog Puzzle Toy", "price": 199.00, "description": "Mental stimulation puzzle toy",
+         "image": "toy3.jpg", "stock": 50, "category": "toys"},
+        {"name": "Tugtopus Dog Toy", "price": 199.00, "description": "Octopus-shaped tug toy",
+         "image": "toy4.jpg", "stock": 50, "category": "toys"},
+
+        # Grooming & Bath
+        {"name": "Electric Pet Grooming Brush", "price": 550.00, "description": "Electric brush for easy grooming",
+         "image": "brush.jpg", "stock": 50, "category": "grooming"},
+        {"name": "Catnip Pet Hair Roller", "price": 120.00, "description": "Remove pet hair easily",
+         "image": "roller.jpg", "stock": 50, "category": "grooming"},
+        {"name": "Tropical Tails Pet Shampoo", "price": 350.00, "description": "Natural ingredients shampoo",
+         "image": "bath1.jpg", "stock": 50, "category": "grooming"},
+        {"name": "Salmon Oil", "price": 389.00, "description": "Healthy coat supplement",
+         "image": "bath2.jpg", "stock": 50, "category": "grooming"},
+        {"name": "MoonCat Waterless Shampoo", "price": 199.00, "description": "No-rinse formula",
+         "image": "bath3.jpg", "stock": 50, "category": "grooming"},
+        {"name": "Pet Grooming Kit", "price": 899.00, "description": "Complete grooming set",
+         "image": "groom1.jpg", "stock": 50, "category": "grooming"},
+        {"name": "Aumusa Brush with Release Button", "price": 1199.00, "description": "Easy-clean brush design",
+         "image": "groom2.jpg", "stock": 50, "category": "grooming"},
+        {"name": "Pet Grooming Kit Pro", "price": 1299.00, "description": "Professional grooming tools",
+         "image": "groom3.jpg", "stock": 50, "category": "grooming"},
+
+        # Beds
+        {"name": "Frog-shaped Cat Bed", "price": 499.00, "description": "Cute frog design bed",
+         "image": "bed2.jpg", "stock": 50, "category": "beds"},
+        {"name": "Donut-shaped Cat Bed", "price": 699.00, "description": "Cozy donut bed",
+         "image": "bed3.jpg", "stock": 50, "category": "beds"},
+        {"name": "Dog Sofa Bed", "price": 850.00, "description": "Comfortable sofa-style bed",
+         "image": "bed4.jpg", "stock": 50, "category": "beds"},
+        {"name": "Round Plush Dog Bed", "price": 699.00, "description": "Soft plush bed",
+         "image": "bed5.jpg", "stock": 50, "category": "beds"},
+
+        # Bowls & Feeders
+        {"name": "Cat Bowl", "price": 199.00, "description": "Ceramic cat bowl",
+         "image": "feeder1.jpg", "stock": 50, "category": "bowls"},
+        {"name": "Pet Bowl Table Set", "price": 2199.00, "description": "Elevated feeding station",
+         "image": "feeder2.jpg", "stock": 50, "category": "bowls"},
+        {"name": "Cat Glass Bowl", "price": 199.00, "description": "Clear glass bowl",
+         "image": "feeder3.jpg", "stock": 50, "category": "bowls"},
+        {"name": "Dog Water Bottle with Foldable Bowl", "price": 250.00, "description": "Portable hydration solution",
+         "image": "portable.jpg", "stock": 50, "category": "bowls"},
+
+        # Litter & Boxes
+        {"name": "Cat Litter Box", "price": 499.00, "description": "Easy-clean litter box",
+         "image": "litter1.jpg", "stock": 50, "category": "litter"},
+        {"name": "Fully Enclosed Cat Litter Box", "price": 699.00, "description": "Privacy for your cat",
+         "image": "litter2.jpg", "stock": 50, "category": "litter"},
+        {"name": "Clamping mixed Cat Litter", "price": 350.00, "description": "Clumping litter formula",
+         "image": "litter3.jpg", "stock": 50, "category": "litter"},
+        {"name": "Potty Pot Litter Sand", "price": 250.00, "description": "Natural litter sand",
+         "image": "litter4.jpg", "stock": 50, "category": "litter"},
+
+        # Clothes
+        {"name": "Blackpink Jacket for Dog", "price": 199.00, "description": "Stylish K-pop inspired jacket",
+         "image": "clothe1.jpg", "stock": 50, "category": "clothes"},
+        {"name": "Ribbon Bow Knit Sweater", "price": 199.00, "description": "Cozy knit sweater with bow",
+         "image": "clothe2.jpg", "stock": 50, "category": "clothes"},
+        {"name": "Baby Blue Sailor Hat & Bow Set", "price": 199.00, "description": "Adorable nautical outfit",
+         "image": "clothe3.jpg", "stock": 50, "category": "clothes"},
+        {"name": "Coral Striped Pajama Set", "price": 199.00, "description": "Comfortable sleepwear",
+         "image": "clothe4.jpg", "stock": 50, "category": "clothes"},
+        {"name": "Princess Lavender Cat Dress", "price": 199.00, "description": "Elegant princess dress",
+         "image": "clothe5.jpg", "stock": 50, "category": "clothes"},
+        {"name": "Pink Plaid Hat & Harness Set", "price": 199.00, "description": "Matching hat and harness",
+         "image": "clothe6.jpg", "stock": 50, "category": "clothes"},
+        {"name": "Yellow Floral Bonnet Dress", "price": 199.00, "description": "Sweet summer dress",
+         "image": "clothe7.jpg", "stock": 50, "category": "clothes"},
+        {"name": "Pink Satin Lace Gown", "price": 199.00, "description": "Formal occasion gown",
+         "image": "clothe8.jpg", "stock": 50, "category": "clothes"},
+    ]
+
+    added_count = 0
+    for prod_data in static_products:
+        existing = Product.query.filter_by(name=prod_data["name"]).first()
+        if not existing:
+            product = Product(**prod_data)
+            db.session.add(product)
+            added_count += 1
+
+    if added_count > 0:
+        db.session.commit()
+        print(f"✓ Added {added_count} static products to database")
+    else:
+        print("✓ Static products already exist in database")
 
 
 @app.route('/')
@@ -190,20 +340,13 @@ def contact():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
-        role = request.form['role']
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
 
-        if role == 'admin':
-            flash('Admin accounts cannot be registered through the form. Contact the owner.', 'error')
+        if not username or not email or not password:
+            flash('All fields are required.', 'error')
             return redirect(url_for('register'))
-
-        if role not in ['seller', 'customer']:
-            flash('Invalid role selected.', 'error')
-            return redirect(url_for('register'))
-
-        hashed_pw = generate_password_hash(password)
 
         existing_user = User.query.filter(
             (User.username == username) | (User.email == email)
@@ -212,7 +355,8 @@ def register():
             flash('Username or email already exists.', 'error')
             return redirect(url_for('register'))
 
-        new_user = User(username=username, email=email, password=hashed_pw, role=role)
+        hashed_pw = generate_password_hash(password)
+        new_user = User(username=username, email=email, password=hashed_pw, role='customer')
         db.session.add(new_user)
         db.session.commit()
 
@@ -238,7 +382,7 @@ def login():
             if user.role == 'admin':
                 return redirect(url_for('admin_dashboard'))
             elif user.role in ['seller', 'owner']:
-                return redirect(url_for('seller_dashboard'))
+                return redirect(url_for('staff_dashboard'))
             else:
                 return redirect(url_for('customer_dashboard'))
         else:
@@ -260,6 +404,7 @@ def admin_dashboard():
     products = Product.query.all()
     all_orders = Order.query.order_by(Order.date_of_purchase.desc()).all()
     all_users = User.query.all()
+    all_photos = Gallery.query.order_by(Gallery.uploaded_at.desc()).all()
     total_sales = db.session.query(db.func.sum(Order.total_price)).scalar() or 0
     total_orders = Order.query.count()
 
@@ -267,6 +412,7 @@ def admin_dashboard():
                            products=products,
                            all_orders=all_orders,
                            all_users=all_users,
+                           all_photos=all_photos,
                            total_sales=total_sales,
                            total_orders=total_orders)
 
@@ -340,12 +486,87 @@ def delete_user(id):
     return redirect(url_for('admin_dashboard'))
 
 
-@app.route('/seller')
+@app.route('/admin/create_staff', methods=['POST'])
+@login_required
+@role_required('admin')
+def create_staff():
+    username = request.form.get('username', '').strip()
+    email = request.form.get('email', '').strip()
+    password = request.form.get('password', '').strip()
+    role = request.form.get('role', '').strip()
+
+    if not username or not email or not password or not role:
+        flash('All fields are required.', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+    if role not in ['seller', 'owner']:
+        flash('Invalid role selected.', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+    existing_user = User.query.filter(
+        (User.username == username) | (User.email == email)
+    ).first()
+    if existing_user:
+        flash('Username or email already exists.', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+    hashed_pw = generate_password_hash(password)
+    new_user = User(username=username, email=email, password=hashed_pw, role=role)
+    db.session.add(new_user)
+    db.session.commit()
+
+    flash(f'Staff account created successfully! Username: {username}', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/delete_photo/<int:id>')
+@login_required
+@role_required('admin')
+def admin_delete_photo(id):
+    photo = Gallery.query.get(id)
+    if photo:
+        try:
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], photo.filename)
+            if os.path.exists(filepath):
+                os.remove(filepath)
+        except Exception as e:
+            print(f"Error deleting file: {e}")
+
+        db.session.delete(photo)
+        db.session.commit()
+        flash('Photo deleted successfully.', 'success')
+    else:
+        flash('Photo not found.', 'error')
+
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/update_photo/<int:id>', methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def admin_update_photo(id):
+    photo = Gallery.query.get(id)
+    if not photo:
+        flash('Photo not found.', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+    if request.method == 'POST':
+        alt_text = request.form.get('alt_text', '').strip()
+        if alt_text:
+            photo.alt_text = alt_text
+            db.session.commit()
+            flash('Photo caption updated successfully.', 'success')
+        return redirect(url_for('admin_dashboard'))
+
+    return render_template('update_photo.html', photo=photo)
+
+
+@app.route('/staff')
 @login_required
 @role_required('seller', 'owner')
-def seller_dashboard():
+def staff_dashboard():
     products = Product.query.filter_by(seller_id=session['user_id']).all()
-    return render_template('seller_dashboard.html', products=products)
+    return render_template('staff_dashboard.html', products=products)
 
 
 @app.route('/add_product', methods=['POST'])
@@ -396,14 +617,14 @@ def add_product():
     return redirect(request.referrer or url_for('shop'))
 
 
-@app.route('/seller/update/<int:id>', methods=['POST'])
+@app.route('/staff/update/<int:id>', methods=['POST'])
 @login_required
 @role_required('seller', 'owner')
-def seller_update_product(id):
+def staff_update_product(id):
     product = Product.query.get(id)
     if not product or product.seller_id != session['user_id']:
         flash('Product not found or access denied.', 'error')
-        return redirect(url_for('seller_dashboard'))
+        return redirect(url_for('staff_dashboard'))
 
     product.name = request.form.get('name', product.name)
     try:
@@ -412,15 +633,16 @@ def seller_update_product(id):
     except ValueError:
         pass
     product.description = request.form.get('description', product.description)
+    product.category = request.form.get('category', product.category)
     db.session.commit()
     flash('Product updated.', 'success')
-    return redirect(url_for('seller_dashboard'))
+    return redirect(url_for('staff_dashboard'))
 
 
-@app.route('/seller/delete/<int:id>')
+@app.route('/staff/delete/<int:id>')
 @login_required
 @role_required('seller', 'owner')
-def seller_delete_product(id):
+def staff_delete_product(id):
     product = Product.query.get(id)
     if product and product.seller_id == session['user_id']:
         db.session.delete(product)
@@ -428,7 +650,7 @@ def seller_delete_product(id):
         flash('Product deleted.', 'success')
     else:
         flash('Product not found or access denied.', 'error')
-    return redirect(url_for('seller_dashboard'))
+    return redirect(url_for('staff_dashboard'))
 
 
 @app.route('/customer')
@@ -436,7 +658,8 @@ def seller_delete_product(id):
 @role_required('customer')
 def customer_dashboard():
     orders = Order.query.filter_by(user_id=session['user_id']).order_by(Order.date_of_purchase.desc()).all()
-    return render_template('customer_dashboard.html', orders=orders)
+    my_photos = Gallery.query.filter_by(user_id=session['user_id']).order_by(Gallery.uploaded_at.desc()).all()
+    return render_template('customer_dashboard.html', orders=orders, my_photos=my_photos)
 
 
 @app.route('/customer/cancel_order/<int:id>')
@@ -461,6 +684,48 @@ def customer_cancel_order(id):
         flash('Order not found or access denied.', 'error')
 
     return redirect(url_for('customer_dashboard'))
+
+
+@app.route('/customer/delete_photo/<int:id>')
+@login_required
+@role_required('customer')
+def customer_delete_photo(id):
+    photo = Gallery.query.get(id)
+    if photo and photo.user_id == session['user_id']:
+        try:
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], photo.filename)
+            if os.path.exists(filepath):
+                os.remove(filepath)
+        except Exception as e:
+            print(f"Error deleting file: {e}")
+
+        db.session.delete(photo)
+        db.session.commit()
+        flash('Photo deleted successfully.', 'success')
+    else:
+        flash('Photo not found or access denied.', 'error')
+
+    return redirect(url_for('customer_dashboard'))
+
+
+@app.route('/customer/update_photo/<int:id>', methods=['GET', 'POST'])
+@login_required
+@role_required('customer')
+def customer_update_photo(id):
+    photo = Gallery.query.get(id)
+    if not photo or photo.user_id != session['user_id']:
+        flash('Photo not found or access denied.', 'error')
+        return redirect(url_for('customer_dashboard'))
+
+    if request.method == 'POST':
+        alt_text = request.form.get('alt_text', '').strip()
+        if alt_text:
+            photo.alt_text = alt_text
+            db.session.commit()
+            flash('Photo caption updated successfully.', 'success')
+        return redirect(url_for('customer_dashboard'))
+
+    return render_template('update_photo.html', photo=photo)
 
 
 @app.route('/cart')
@@ -695,7 +960,11 @@ def upload_photo():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        new_photo = Gallery(filename=filename, alt_text=f"{session['username']}'s photo")
+        new_photo = Gallery(
+            filename=filename,
+            alt_text=f"{session['username']}'s photo",
+            user_id=session['user_id']
+        )
         db.session.add(new_photo)
         db.session.commit()
 
@@ -715,4 +984,6 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         create_admin_user()
+        create_staff_accounts()
+        populate_static_products()
     app.run(debug=True)

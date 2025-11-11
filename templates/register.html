@@ -9,12 +9,6 @@
       <input type="email" name="email" placeholder="Email" required>
       <input type="password" name="password" placeholder="Password" required>
 
-      <select name="role" required>
-        <option value="" disabled selected>Select Role</option>
-        <option value="customer">Customer</option>
-        <option value="seller">Seller</option>
-      </select>
-
       <button type="submit">Register</button>
     </form>
     <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>

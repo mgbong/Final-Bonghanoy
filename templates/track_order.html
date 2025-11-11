@@ -1,113 +1,145 @@
 {% extends "base.html" %}
 {% block title %}Track Order | Pawradise{% endblock %}
 {% block content %}
-<section class="track-order-section">
-  <h2>Track Your Order</h2>
-
-  <form method="POST" class="track-form">
-    <div class="search-box">
-      <input type="text" name="order_id" placeholder="Enter your order ID" required>
-      <button type="submit">Track Order</button>
-    </div>
-  </form>
 
   {% if order %}
-  <div class="order-tracking-details">
-    <div class="tracking-header">
-      <h3>Order #{{ order.id }}</h3>
-      <span class="status-badge status-{{ order.status.lower() }}">{{ order.status }}</span>
+  <div class="order-tracking-container">
+    <div class="tracking-title-section">
+      <h3>Order Tracking</h3>
+      <p class="order-number">Order #PR-2025-{{ "%04d"|format(order.id) }}</p>
     </div>
 
-    <div class="tracking-info-grid">
-      <div class="info-card">
-        <h4> Product Details</h4>
-        <p><strong>Product:</strong> {{ order.product_name }}</p>
-        <p><strong>Quantity:</strong> {{ order.quantity }}</p>
-        <p><strong>Total Price:</strong> ₱{{ "%.2f"|format(order.total_price) }}</p>
+    <div class="progress-timeline">
+      <div class="progress-step {% if order.status in ['Pending', 'Confirmed', 'Shipped', 'Delivered'] %}completed{% endif %}">
+        <div class="step-circle">1</div>
+        <div class="step-label">Order Placed</div>
       </div>
 
-      <div class="info-card">
-        <h4> Customer Information</h4>
-        <p><strong>Name:</strong> {{ order.customer_name }}</p>
-        <p><strong>Contact:</strong> {{ order.contact_number }}</p>
-        <p><strong>Address:</strong> {{ order.address }}</p>
+      <div class="progress-line {% if order.status in ['Confirmed', 'Shipped', 'Delivered'] %}completed{% endif %}"></div>
+
+      <div class="progress-step {% if order.status in ['Confirmed', 'Shipped', 'Delivered'] %}completed{% endif %} {% if order.status == 'Confirmed' %}active{% endif %}">
+        <div class="step-circle">2</div>
+        <div class="step-label">Processing</div>
       </div>
 
-      <div class="info-card">
-        <h4> Payment Details</h4>
-        <p><strong>Method:</strong> {{ order.payment_method }}</p>
-        <p><strong>Order Date:</strong> {{ order.date_of_purchase.strftime("%B %d, %Y at %I:%M %p") }}</p>
-        <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery.strftime("%B %d, %Y") }}</p>
+      <div class="progress-line {% if order.status in ['Shipped', 'Delivered'] %}completed{% endif %}"></div>
+
+      <div class="progress-step {% if order.status in ['Shipped', 'Delivered'] %}completed{% endif %} {% if order.status == 'Shipped' %}active{% endif %}">
+        <div class="step-circle">3</div>
+        <div class="step-label">Shipped</div>
+      </div>
+
+      <div class="progress-line {% if order.status == 'Delivered' %}completed{% endif %}"></div>
+
+      <div class="progress-step {% if order.status == 'Delivered' %}completed{% endif %}">
+        <div class="step-circle">4</div>
+        <div class="step-label">Out for Delivery</div>
+      </div>
+
+      <div class="progress-line {% if order.status == 'Delivered' %}completed{% endif %}"></div>
+
+      <div class="progress-step {% if order.status == 'Delivered' %}completed{% endif %}">
+        <div class="step-circle">5</div>
+        <div class="step-label">Delivered</div>
       </div>
     </div>
 
-    <div class="tracking-timeline">
-      <h4> Order Status Timeline</h4>
-      <div class="timeline">
-        <div class="timeline-step {% if order.status in ['Pending', 'Confirmed', 'Shipped', 'Delivered'] %}completed{% endif %}">
-          <div class="timeline-icon"></div>
-          <div class="timeline-content">
-            <strong>Order Placed</strong>
-            <p>{{ order.date_of_purchase.strftime("%B %d, %Y") }}</p>
-          </div>
+    <div class="order-details-grid">
+      <div class="detail-card">
+        <h4>Order Information</h4>
+        <div class="detail-row">
+          <span class="detail-label">Order #:</span>
+          <span class="detail-value">PR-2025-{{ "%04d"|format(order.id) }}</span>
         </div>
+        <div class="detail-row">
+          <span class="detail-label">Date of Purchase:</span>
+          <span class="detail-value">{{ order.date_of_purchase.strftime("%B %d, %Y") }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Payment Method:</span>
+          <span class="detail-value">{{ order.payment_method }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Order Status:</span>
+          <span class="detail-value status-highlight">{{ order.status }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Estimated Delivery:</span>
+          <span class="detail-value delivery-date">{{ order.estimated_delivery.strftime("%B %d, %Y") }}</span>
+        </div>
+      </div>
 
-        <div class="timeline-step {% if order.status in ['Confirmed', 'Shipped', 'Delivered'] %}completed{% endif %}">
-          <div class="timeline-icon"></div>
-          <div class="timeline-content">
-            <strong>Order Confirmed</strong>
-            {% if order.status in ['Confirmed', 'Shipped', 'Delivered'] %}
-            <p>Confirmed</p>
-            {% else %}
-            <p>Pending confirmation</p>
-            {% endif %}
-          </div>
+      <div class="detail-card">
+        <h4>Customer Information</h4>
+        <div class="detail-row">
+          <span class="detail-label">Name:</span>
+          <span class="detail-value">{{ order.customer_name }}</span>
         </div>
+        <div class="detail-row">
+          <span class="detail-label">Phone:</span>
+          <span class="detail-value">{{ order.contact_number }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Shipping Address:</span>
+          <span class="detail-value">{{ order.address }}</span>
+        </div>
+      </div>
+    </div>
 
-        <div class="timeline-step {% if order.status in ['Shipped', 'Delivered'] %}completed{% endif %}">
-          <div class="timeline-icon"></div>
-          <div class="timeline-content">
-            <strong>Shipped</strong>
-            {% if order.status in ['Shipped', 'Delivered'] %}
-            <p>On the way</p>
-            {% else %}
-            <p>Awaiting shipment</p>
-            {% endif %}
+    <div class="products-ordered-section">
+      <h4>Products Ordered</h4>
+      <div class="product-order-card">
+        {% if order.product_id %}
+          {% set product = order.product_id|get_product %}
+          {% if product and product.image %}
+          <div class="product-image-box">
+            <img src="{{ url_for('static', filename=product.image) }}" alt="{{ order.product_name }}">
           </div>
-        </div>
-
-        <div class="timeline-step {% if order.status == 'Delivered' %}completed{% endif %}">
-          <div class="timeline-icon"></div>
-          <div class="timeline-content">
-            <strong>Delivered</strong>
-            {% if order.status == 'Delivered' %}
-            <p>Order delivered successfully!</p>
-            {% else %}
-            <p>Expected: {{ order.estimated_delivery.strftime("%B %d, %Y") }}</p>
-            {% endif %}
-          </div>
-        </div>
-
-        {% if order.status == 'Cancelled' %}
-        <div class="timeline-step completed cancelled">
-          <div class="timeline-icon"></div>
-          <div class="timeline-content">
-            <strong>Order Cancelled</strong>
-            <p>This order has been cancelled</p>
-          </div>
-        </div>
+          {% endif %}
         {% endif %}
+
+        <div class="product-order-details">
+          <h5>{{ order.product_name }}</h5>
+          <div class="product-detail-row">
+            <span class="label">Price:</span>
+            <span class="value">₱{{ "%.2f"|format(order.unit_price) }}</span>
+          </div>
+          <div class="product-detail-row">
+            <span class="label">Quantity:</span>
+            <span class="value">{{ order.quantity }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-summary-total">
+        <div class="summary-row">
+          <span class="summary-label">Subtotal:</span>
+          <span class="summary-value">₱{{ "%.2f"|format(order.total_price) }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Shipping Fee:</span>
+          <span class="summary-value">₱50.00</span>
+        </div>
+        <div class="summary-row total-row">
+          <span class="summary-label">Total:</span>
+          <span class="summary-value">₱{{ "%.2f"|format(order.total_price + 50) }}</span>
+        </div>
       </div>
     </div>
 
-    {% if order.status not in ['Delivered', 'Cancelled'] and order.user_id == session.get('user_id') and session.get('role') == 'customer' %}
-    <div class="order-actions">
-      <a href="{{ url_for('customer_cancel_order', id=order.id) }}" class="cancel-order-btn" onclick="return confirm('Are you sure you want to cancel this order?')">
+    <div class="tracking-actions">
+      <a href="{{ url_for('shop') }}" class="action-btn secondary-btn">Back to Shop</a>
+      {% if order.status not in ['Delivered', 'Cancelled'] and order.user_id == session.get('user_id') and session.get('role') == 'customer' %}
+      <a href="{{ url_for('customer_cancel_order', id=order.id) }}"
+         class="action-btn cancel-btn"
+         onclick="return confirm('Are you sure you want to cancel this order?')">
         Cancel Order
       </a>
+      {% endif %}
+      <a href="{{ url_for('contact') }}" class="action-btn primary-btn">Contact Support</a>
     </div>
-    {% endif %}
   </div>
   {% endif %}
 </section>
+
 {% endblock %}

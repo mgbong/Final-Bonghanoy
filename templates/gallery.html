@@ -2,13 +2,17 @@
 {% block title %}Gallery - Pawradise{% endblock %}
 
 {% block content %}
-<section class="gallery-section">
-    <h2>PAWFECT MOMENTS!</h2>
+<section class="gallery-section" id="about">
+    <h1 class="heading">PAWFECT MOMENTS</h1>
     <div class="gallery-grid">
         {% if photos %}
             {% for photo in photos %}
             <div class="gallery-item">
                 <img src="{{ url_for('static', filename='uploads/' ~ photo.filename) }}" alt="{{ photo.alt_text }}">
+                <div class="gallery-caption">
+                    <p>{{ photo.alt_text }}</p>
+                    <small>{{ photo.uploaded_at.strftime('%b %d, %Y') }}</small>
+                </div>
             </div>
             {% endfor %}
         {% else %}

@@ -1,69 +1,112 @@
 {% extends "base.html" %}
 {% block title %}Customer Dashboard | Pawradise{% endblock %}
 {% block content %}
-<section class="admin">
-  <h2>Your Customer Dashboard</h2>
-  <p>Welcome back, {{ session['username'] }}! Track your orders below.</p>
+<section class="orders">
+  <h2>My Dashboard</h2>
+  <p>Welcome back, {{ session['username'] }}!</p>
 
-  <h3>Your Orders</h3>
+  <h3>My Orders</h3>
   {% if orders %}
-  <table class="product-table">
-    <thead>
-      <tr>
-        <th>Order ID</th>
-        <th>Product</th>
-        <th>Quantity</th>
-        <th>Unit Price</th>
-        <th>Total Price</th>
-        <th>Date Purchased</th>
-        <th>Est. Delivery</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for o in orders %}
-      <tr>
-        <td>{{ o.id }}</td>
-        <td>{{ o.product_name }}</td>
-        <td>{{ o.quantity }}</td>
-        <td>₱{{ "%.2f"|format(o.unit_price) }}</td>
-        <td>₱{{ "%.2f"|format(o.total_price) }}</td>
-        <td>{{ o.date_of_purchase.strftime("%B %d, %Y") }}</td>
-        <td>{{ o.estimated_delivery.strftime("%B %d, %Y") }}</td>
-        <td>
-          <span class="status-badge status-{{ o.status.lower() }}">
-            {{ o.status }}
-          </span>
-        </td>
-        <td>
-          {% if o.status in ['Pending', 'Confirmed'] %}
-          <a href="{{ url_for('customer_cancel_order', id=o.id) }}" class="delete-btn" onclick="return confirm('Cancel this order?')">Cancel Order</a>
-          {% else %}
-          <span class="disabled-text">Cannot cancel</span>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="orders-summary">
+    <strong>Total Orders:</strong> {{ orders|length }}
+  </div>
+
+  <div class="order-list">
+    {% for order in orders %}
+    <div class="order-card">
+      <div class="order-header">
+        <div class="order-id">
+          <span>📦</span>
+          <strong>Order #{{ order.id }}</strong>
+        </div>
+        <span class="status-badge status-{{ order.status.lower() }}">{{ order.status }}</span>
+      </div>
+
+      <div class="order-body">
+        <div class="order-product">
+          <h4>{{ order.product_name }}</h4>
+        </div>
+
+        <div class="order-details">
+          <div class="detail-item">
+            <span class="label">Quantity:</span>
+            <span class="value">{{ order.quantity }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Unit Price:</span>
+            <span class="value">₱{{ "%.2f"|format(order.unit_price) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Total:</span>
+            <span class="value price">₱{{ "%.2f"|format(order.total_price) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Order Date:</span>
+            <span class="value">{{ order.date_of_purchase.strftime('%b %d, %Y') }}</span>
+          </div>
+        </div>
+
+        <div class="order-timeline">
+          <div class="timeline-item">
+            <span class="timeline-icon">📅</span>
+            <div class="timeline-content">
+              <strong>Estimated Delivery</strong>
+              <p>{{ order.estimated_delivery.strftime('%b %d, %Y') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-footer">
+        <a href="{{ url_for('track_order', order_id=order.id) }}" class="track-btn">Track Order</a>
+        {% if order.status in ['Pending', 'Confirmed'] %}
+        <a href="{{ url_for('customer_cancel_order', id=order.id) }}"
+           class="cancel-order-btn"
+           onclick="return confirm('Are you sure you want to cancel this order?')"
+           style="background: var(--error); padding: 0.7rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: bold; color: white;">
+          Cancel Order
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
   {% else %}
   <div class="empty-orders">
     <div class="empty-icon">📦</div>
-    <h3>No orders yet</h3>
-    <p>You haven't placed any orders yet.</p>
-    <a href="{{ url_for('shop') }}" class="shop-now-btn">Start Shopping</a>
+    <h3>No Orders Yet</h3>
+    <p>Start shopping to see your orders here!</p>
+    <a href="{{ url_for('shop') }}" class="shop-now-btn">Shop Now</a>
   </div>
   {% endif %}
 
-  <div class="dashboard-actions">
-    <h3>Quick Actions</h3>
-    <div class="action-buttons">
-      <a href="{{ url_for('shop') }}" class="action-btn"> Browse Products</a>
-      <a href="{{ url_for('cart') }}" class="action-btn"> View Cart</a>
-      <a href="{{ url_for('track_order') }}" class="action-btn"> Track Order</a>
-      <a href="{{ url_for('gallery') }}" class="action-btn">📸 Share Pet Photos</a>
+  <h3 style="margin-top: 3rem;">My Uploaded Photos</h3>
+  {% if my_photos %}
+  <div class="gallery-grid" style="margin-top: 1.5rem;">
+    {% for photo in my_photos %}
+    <div class="gallery-item">
+      <img src="{{ url_for('static', filename='uploads/' ~ photo.filename) }}" alt="{{ photo.alt_text }}">
+      <div class="gallery-caption">
+        <p>{{ photo.alt_text }}</p>
+        <small>{{ photo.uploaded_at.strftime('%b %d, %Y') }}</small>
+      </div>
+      <div class="photo-actions">
+        <a href="{{ url_for('customer_delete_photo', id=photo.id) }}"
+           class="delete-btn"
+           onclick="return confirm('Are you sure you want to delete this photo?')"
+           style="margin-top: 0.5rem; text-align: center;">
+          Delete Photo
+        </a>
+      </div>
     </div>
+    {% endfor %}
   </div>
+  {% else %}
+  <div class="empty-orders" style="padding: 2rem;">
+    <div class="empty-icon">📷</div>
+    <p>You haven't uploaded any photos yet.</p>
+    <a href="{{ url_for('gallery') }}" class="shop-now-btn">Go to Gallery</a>
+  </div>
+  {% endif %}
 </section>
 {% endblock %}

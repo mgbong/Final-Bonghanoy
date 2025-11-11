@@ -3,32 +3,39 @@
 
 {% block content %}
 <section class="shop-section">
-    <h1 class="heading">Exclusive Products</h1>
+    <h1 class="heading">EXCLUSIVE PRODUCTS</h1>
 
-    <!-- Category Filter -->
     <div class="category-filter">
-        <a href="{{ url_for('shop') }}" class="filter-btn {% if not request.args.get('category') %}active{% endif %}">
+        <a href="{{ url_for('shop') }}"
+            class="filter-btn {% if not request.args.get('category') %}active{% endif %}">
             All Products
         </a>
-        <a href="{{ url_for('shop', category='collars') }}" class="filter-btn {% if request.args.get('category') == 'collars' %}active{% endif %}">
+        <a href="{{ url_for('shop', category='collars') }}"
+            class="filter-btn {% if request.args.get('category') == 'collars' %}active{% endif %}">
             Collars & Leashes
         </a>
-        <a href="{{ url_for('shop', category='toys') }}" class="filter-btn {% if request.args.get('category') == 'toys' %}active{% endif %}">
+        <a href="{{ url_for('shop', category='toys') }}"
+            class="filter-btn {% if request.args.get('category') == 'toys' %}active{% endif %}">
             Toys
         </a>
-        <a href="{{ url_for('shop', category='grooming') }}" class="filter-btn {% if request.args.get('category') == 'grooming' %}active{% endif %}">
+        <a href="{{ url_for('shop', category='grooming') }}"
+            class="filter-btn {% if request.args.get('category') == 'grooming' %}active{% endif %}">
             Grooming & Bath
         </a>
-        <a href="{{ url_for('shop', category='beds') }}" class="filter-btn {% if request.args.get('category') == 'beds' %}active{% endif %}">
+        <a href="{{ url_for('shop', category='beds') }}"
+            class="filter-btn {% if request.args.get('category') == 'beds' %}active{% endif %}">
             Beds
         </a>
-        <a href="{{ url_for('shop', category='bowls') }}" class="filter-btn {% if request.args.get('category') == 'bowls' %}active{% endif %}">
+        <a href="{{ url_for('shop', category='bowls') }}"
+            class="filter-btn {% if request.args.get('category') == 'bowls' %}active{% endif %}">
             Bowls & Feeders
         </a>
-        <a href="{{ url_for('shop', category='litter') }}" class="filter-btn {% if request.args.get('category') == 'litter' %}active{% endif %}">
+        <a href="{{ url_for('shop', category='litter') }}"
+            class="filter-btn {% if request.args.get('category') == 'litter' %}active{% endif %}">
             Litter & Boxes
         </a>
-        <a href="{{ url_for('shop', category='clothes') }}" class="filter-btn {% if request.args.get('category') == 'clothes' %}active{% endif %}">
+        <a href="{{ url_for('shop', category='clothes') }}"
+            class="filter-btn {% if request.args.get('category') == 'clothes' %}active{% endif %}">
             Clothes
         </a>
     </div>
@@ -57,44 +64,50 @@
     </div>
     {% endif %}
 
-    {% if products %}
     <div class="product-container">
-        {% for product in products %}
-        <div class="product-card">
-            {% if product.image %}
-            <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
-            {% else %}
-            <img src="{{ url_for('static', filename='placeholder.jpg') }}" alt="{{ product.name }}">
-            {% endif %}
+        {% if products %}
+            {% for product in products %}
+            <div class="product-card">
+                {% if product.image %}
+                <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
+                {% else %}
+                <img src="{{ url_for('static', filename='placeholder.jpg') }}" alt="{{ product.name }}">
+                {% endif %}
 
-            {% if product.stock <= 0 %}
-            <div class="out-of-stock-badge">Out of Stock</div>
-            {% elif product.stock <= 5 %}
-            <div class="low-stock-badge">Only {{ product.stock }} left!</div>
-            {% endif %}
+                {% if product.stock <= 0 %}
+                <div class="out-of-stock-badge">Out of Stock</div>
+                {% elif product.stock <= 5 %}
+                <div class="low-stock-badge">Only {{ product.stock }} left!</div>
+                {% endif %}
 
-            <h3>{{ product.name }}</h3>
-            <p class="product-desc">{{ product.description }}</p>
-            <p class="product-price">₱{{ "%.2f"|format(product.price) }}</p>
+                {% if product.sales_count >= 10 %}
+                <div class="best-seller-badge">⭐ Best Seller</div>
+                {% endif %}
 
-            {% if product.stock > 0 and session.get('role') != 'admin' %}
-            <div class="product-actions">
-                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" class="add-to-cart-form">
-                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="quantity-input" required>
-                    <button type="submit" class="add-cart-btn">Add to Cart</button>
-                </form>
-                <a href="{{ url_for('buy_now', product_id=product.id) }}" class="buy-now-btn">Buy Now</a>
+                <h3>{{ product.name }}</h3>
+                <p class="product-desc">{{ product.description }}</p>
+                <p class="product-price">₱{{ "%.2f"|format(product.price) }}</p>
+
+                {% if product.stock > 0 and session.get('role') != 'admin' %}
+                <div class="product-actions">
+                    <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST"
+                        class="add-to-cart-form">
+                        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}"
+                            class="quantity-input" required>
+                        <button type="submit" class="add-cart-btn">Add to Cart</button>
+                    </form>
+                    <a href="{{ url_for('buy_now', product_id=product.id) }}" class="buy-now-btn">Buy Now</a>
+                </div>
+                {% elif product.stock <= 0 %}
+                <button class="add-cart-btn disabled" disabled>Out of Stock</button>
+                {% elif session.get('role') == 'admin' %}
+                <p class="disabled-text">Admin View Only</p>
+                {% endif %}
             </div>
-            {% elif product.stock <= 0 %}
-            <button class="add-cart-btn disabled" disabled>Out of Stock</button>
-            {% elif session.get('role') == 'admin' %}
-            <p class="disabled-text">Admin View Only</p>
-            {% endif %}
-        </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <p class="no-products">No products available in this category.</p>
+        {% endif %}
     </div>
-    {% else %}
-    <p class="no-products">No products available yet.</p>
-    {% endif %}
 </section>
 {% endblock %}

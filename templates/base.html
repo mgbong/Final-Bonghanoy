@@ -24,11 +24,11 @@
         <div class="dropdown-content">
           {% if session.get('username') %}
             {% if session.get('role') == 'admin' %}
-              <a href="{{ url_for('admin_dashboard') }}">🎛 Admin Dashboard</a>
+              <a href="{{ url_for('admin_dashboard') }}"> Admin Dashboard</a>
               <a href="{{ url_for('logout') }}"> Logout ({{ session['username'] }})</a>
 
             {% elif session.get('role') in ['seller', 'owner'] %}
-              <a href="{{ url_for('seller_dashboard') }}">Seller Dashboard</a>
+              <a href="{{ url_for('staff_dashboard') }}"> Staff Dashboard</a>
               <a href="{{ url_for('logout') }}"> Logout ({{ session['username'] }})</a>
 
             {% elif session.get('role') == 'customer' %}
@@ -40,7 +40,7 @@
             {% endif %}
           {% else %}
             <a href="{{ url_for('register') }}"> Sign Up</a>
-            <a href="{{ url_for('login') }}"> Login</a>
+            <a href="{{ url_for('login') }}"> Log In</a>
           {% endif %}
         </div>
       </div>

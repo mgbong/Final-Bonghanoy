@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Orders | Pawradise{% endblock %}
+{% block title %}My Orders | Pawradise{% endblock %}
 {% block content %}
 <section class="orders">
-  <h2>Your Orders</h2>
+  <h2>My Orders</h2>
 
   {% if orders %}
   <div class="orders-summary">
@@ -18,7 +18,7 @@
           <span class="status-badge status-{{ order.status.lower() }}">{{ order.status }}</span>
         </div>
         <div class="order-date">
-          <small>Ordered: {{ order.date_of_purchase.strftime("%B %d, %Y at %I:%M %p") }}</small>
+          <small>Ordered: {{ order.date_of_purchase.strftime("%B %d, %Y") }}</small>
         </div>
       </div>
 
@@ -38,57 +38,17 @@
               <span class="label">Total Price:</span>
               <span class="value price">₱{{ "%.2f"|format(order.total_price) }}</span>
             </div>
-          </div>
-        </div>
-
-        <div class="order-timeline">
-          <div class="timeline-item">
-            <span class="timeline-icon"></span>
-            <div class="timeline-content">
-              <strong>Purchase Date</strong>
-              <p>{{ order.date_of_purchase.strftime("%B %d, %Y") }}</p>
+            <div class="detail-item">
+              <span class="label">Estimated Delivery:</span>
+              <span class="value">{{ order.estimated_delivery.strftime("%B %d, %Y") }}</span>
             </div>
           </div>
-
-          <div class="timeline-item">
-            <span class="timeline-icon">
-              {% if order.status == 'Delivered' %}
-              {% elif order.status == 'Cancelled' %}
-              {% elif order.status == 'Shipped' %}
-              {% elif order.status == 'Confirmed' %}
-              {% else %}
-              {% endif %}
-            </span>
-            <div class="timeline-content">
-              <strong>Status</strong>
-              <p>{{ order.status }}</p>
-            </div>
-          </div>
-
-          {% if order.status not in ['Delivered', 'Cancelled'] %}
-          <div class="timeline-item">
-            <span class="timeline-icon"></span>
-            <div class="timeline-content">
-              <strong>Estimated Delivery</strong>
-              <p>{{ order.estimated_delivery.strftime("%B %d, %Y") }}</p>
-              <small class="text-muted">(7 days from order)</small>
-            </div>
-          </div>
-          {% elif order.status == 'Delivered' %}
-          <div class="timeline-item completed">
-            <span class="timeline-icon"></span>
-            <div class="timeline-content">
-              <strong>Delivered</strong>
-              <p>Your order has been delivered!</p>
-            </div>
-          </div>
-          {% endif %}
         </div>
       </div>
 
       <div class="order-footer">
-        <a href="{{ url_for('track_order') }}?order_id={{ order.id }}" class="track-btn">
-          Track Order
+        <a href="{{ url_for('track_order', order_id=order.id) }}" class="track-btn">
+           Track Order
         </a>
         {% if order.status in ['Pending', 'Confirmed'] and session.get('role') == 'customer' %}
         <a href="{{ url_for('customer_cancel_order', id=order.id) }}"
@@ -103,7 +63,6 @@
   </div>
   {% else %}
   <div class="empty-orders">
-    <div class="empty-icon"></div>
     <h3>No orders yet</h3>
     <p>You haven't purchased anything yet. Start shopping!</p>
     <a href="{{ url_for('shop') }}" class="shop-now-btn">Browse Products</a>
