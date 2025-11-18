@@ -504,7 +504,6 @@ header {
   border-collapse: collapse;
   margin-bottom: 2rem;
   overflow-x: auto;
-  display: block;
 }
 
 .cart-table thead {

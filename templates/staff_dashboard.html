@@ -35,7 +35,7 @@
     <tbody>
       {% for p in products %}
       <tr>
-        <form action="{{ url_for('seller_update_product', id=p.id) }}" method="POST">
+        <form action="{{ url_for('staff_update_product', id=p.id) }}" method="POST">
           <td>{{ p.id }}</td>
           <td>
             {% if p.image %}
@@ -51,7 +51,7 @@
           <td><input type="text" name="description" value="{{ p.description }}" style="width:200px;"></td>
           <td>
             <button type="submit" class="update-btn">Update</button>
-            <a href="{{ url_for('seller_delete_product', id=p.id) }}" class="delete-btn" onclick="return confirm('Delete this product?')">Delete</a>
+            <a href="{{ url_for('staff_delete_product', id=p.id) }}" class="delete-btn" onclick="return confirm('Delete this product?')">Delete</a>
           </td>
         </form>
       </tr>
